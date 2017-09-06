@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
           MPI_Send(&col, 1, MPI_INT, dest, mtype, MPI_COMM_WORLD);
           MPI_Send(&a, s*s, MPI_INT, dest, mtype, MPI_COMM_WORLD);
           MPI_Send(&b[0][offset],s*col, MPI_INT, dest, mtype,MPI_COMM_WORLD);
-                    offset = offset + col;
+          offset = offset + col;
         }
         
       for(int i=1; i<=nop; i++)
@@ -60,9 +60,9 @@ int main(int argc, char *argv[])
           MPI_Recv(&col, 1, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
           MPI_Recv(&c[0][col], s*col, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
             
-           if(i==2)
-             d4=MPI_Wtime();
-            }
+          if(i==2)
+            d4=MPI_Wtime();
+        }
         
         
       for(int i=0; i<s; i++)
@@ -77,50 +77,53 @@ int main(int argc, char *argv[])
     }
 
   if(rank>MASTER)
-    {   if(rank==2)
+    {   
+      if(rank==2)
         d5=MPI_Wtime();
         
       fprintf(stderr,"%d \n",rank);
       MPI_Recv(&offset, 1, MPI_INT, master, mtype, MPI_COMM_WORLD, &status);
- MPI_Recv(&col, 1, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
-          MPI_Recv(&c[0][col], s*col, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
+      MPI_Recv(&col, 1, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
+      MPI_Recv(&c[0][col], s*col, MPI_INT, source, mtype, MPI_COMM_WORLD, &status);
         
-           if(i==2)
-             d4=MPI_Wtime();
-            }
-    
-      for(int i=0; i<s; i++)
-        {
-          printf("\n");
-          for(int j=0; j<s; j++)
-            printf("%d", c[i][j]);
-        }
-    
-    
-      d2=MPI_Wtime();
+      if(i==2)
+        d4=MPI_Wtime();
     }
+    
+   for(int i=0; i<s; i++)
+    {
+      printf("\n");
+      for(int j=0; j<s; j++)
+        printf("%d", c[i][j]);
+    }
+    
+    
+   d2=MPI_Wtime();
+    
 
   if(rank>master)
     {   if(rank==2)
         d5=MPI_Wtime();
-      //mtype= FROM_MASTER;                                                                                                                                                                    
+      // From master                                                                                                                                                                    
       fprintf(stderr,"%d \n",rank);
-      MPI_Recv(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
-      MPI_Recv(&col, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
-      MPI_Recv(&a, s*s, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
-      MPI_Recv(&b, s*col, MPI_INT, MASTER, mtype, MPI_COMM_WORLD, &status);
+      MPI_Recv(&offset, 1, MPI_INT, master, mtype, MPI_COMM_WORLD, &status);
+      MPI_Recv(&col, 1, MPI_INT, master, mtype, MPI_COMM_WORLD, &status);
+      MPI_Recv(&a, s*s, MPI_INT, master, mtype, MPI_COMM_WORLD, &status);
+      MPI_Recv(&b, s*col, MPI_INT, master, mtype, MPI_COMM_WORLD, &status);
       fprintf(stderr,"%d \n",rank);
       for(int x=0; x<s; x++)
+      {
         for(int i=0; i<col; i++)
           {
             for(int j=0; j<s; j++)
               c[i][x] = c[i][x] + a[i][j] * b[j][x];
           }
-      // mtype= FROM_WORKER;                                                                                                                                                                   
+      }
+      // From worker                                                                                                                                                                   
       fprintf(stderr,"%d : sending-----\n",rank);
-      MPI_Send(&offset, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
-      MPI_Send(&col, 1, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
-      MPI_Send(&c,s*col, MPI_INT, MASTER, mtype, MPI_COMM_WORLD);
+      MPI_Send(&offset, 1, MPI_INT, master, mtype, MPI_COMM_WORLD);
+      MPI_Send(&col, 1, MPI_INT, master, mtype, MPI_COMM_WORLD);
+      MPI_Send(&c,s*col, MPI_INT, master, mtype, MPI_COMM_WORLD);
       fprintf(stderr,"%d : Sent-----\n",rank);
       if(rank==2)
         d6=MPI_Wtime();
@@ -128,7 +131,7 @@ int main(int argc, char *argv[])
   fprintf(stderr,"Printing time\n");
   fprintf(stderr,"%f \n",d2-d1);
 
-fprintf(stderr,"%f \n",d6-d5);
+  fprintf(stderr,"%f \n",d6-d5);
   MPI_Finalize();
   return 0;
 }
